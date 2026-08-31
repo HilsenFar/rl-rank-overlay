@@ -1,0 +1,14 @@
+# Build output
+/dist/
+/host/bin/
+/host/obj/
+
+# Runtime state written next to the app
+overlay-window.json
+overlay-webview/
+__none.ini
+
+# OS / editor
+Thumbs.db
+.DS_Store
+*.pdb

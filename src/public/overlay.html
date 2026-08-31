@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RL Rank Overlay</title>
+<style>
+  /* The page background stays fully transparent: the native host window paints
+     nothing, so whatever this page does NOT draw is the game showing through. */
+  :root {
+    --panel: rgba(12, 14, 20, 0.74);
+    --border: rgba(255, 255, 255, 0.09);
+    --ink: #eef1f6;
+    --muted: #9aa3b2;
+    --blue: #4a90ff;
+    --orange: #ff8a3d;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; }
+  body {
+    font: 500 13px/1.25 "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    -webkit-user-select: none; user-select: none;
+    overflow: hidden;
+  }
+
+  /* One padded wrapper. Its size is what we report to the host window. */
+  #wrap { display: inline-block; padding: 10px; }
+
+  #card {
+    display: flex; align-items: stretch; gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 9px 11px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+  }
+
+  #grip {
+    width: 12px; flex: 0 0 12px; cursor: move; align-self: stretch;
+    border-radius: 6px;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.35) 1px, transparent 1.4px) 0 0 / 4px 4px;
+    opacity: .5;
+  }
+  #grip:hover { opacity: .9; }
+
+  .team { display: flex; flex-direction: column; gap: 5px; min-width: 150px; }
+  .vs { align-self: center; color: var(--muted); font-weight: 700; font-size: 11px; letter-spacing: .5px; padding: 0 2px; }
+
+  .row { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; }
+  .team.blue .dot { background: var(--blue); }
+  .team.orange .dot { background: var(--orange); }
+
+  .name { flex: 1 1 auto; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 7px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+  .badge .tier { color: var(--tier, #cfd6e2); }
+  .badge .mmr { color: var(--muted); font-weight: 600; }
+  .badge.loading, .badge.none { color: var(--muted); }
+
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1px; }
+  .head b { font-size: 11px; letter-spacing: .4px; text-transform: uppercase; }
+  .team.blue .head b { color: var(--blue); }
+  .team.orange .head b { color: var(--orange); }
+  .head .pl { color: var(--muted); font-size: 10px; }
+</style>
+</head>
+<body>
+  <div id="wrap"><div id="card"><div id="grip" title="Drag to move"></div></div></div>
+
+<script>
+// --- rank tier colours, keyed by the first word of the label ------------------
+const TIER_COLOR = {
+  Unranked: '#6b7280', Bronze: '#b06a3b', Silver: '#9aa7b8', Gold: '#e9b949',
+  Platinum: '#37c7d4', Diamond: '#4f74ff', Champion: '#b45cf0',
+  'Grand Champion': '#e14b52', 'Supersonic Legend': '#e8e8ff'
+};
+function tierColor(label) {
+  if (!label) return '#6b7280';
+  if (label.startsWith('Grand Champion')) return TIER_COLOR['Grand Champion'];
+  if (label.startsWith('Supersonic')) return TIER_COLOR['Supersonic Legend'];
+  return TIER_COLOR[label.split(' ')[0]] || '#cfd6e2';
+}
+// Compress "Grand Champion II" -> "GC II" etc. so the badge stays narrow.
+function shortLabel(label) {
+  if (!label) return '';
+  return label
+    .replace('Grand Champion', 'GC')
+    .replace('Champion', 'Champ')
+    .replace('Supersonic Legend', 'SSL')
+    .replace('Platinum', 'Plat')
+    .replace('Diamond', 'Dia')
+    .replace('Bronze', 'Brz')
+    .replace('Silver', 'Slv');
+}
+const PLAYLIST_NAME = { p1: '1v1', p2: '2v2', p3: '3v3', tournaments: 'Tournament' };
+
+const card = document.getElementById('card');
+const grip = document.getElementById('grip');
+
+function badge(rank) {
+  if (rank === undefined) return '<span class="badge loading">…</span>';
+  if (rank === null) return '<span class="badge none">—</span>';
+  const col = tierColor(rank.label);
+  const div = rank.division ? ' <span style="opacity:.7">d' + rank.division + '</span>' : '';
+  const mmr = Number.isFinite(rank.mmr) ? '<span class="mmr">' + rank.mmr + '</span>' : '';
+  return '<span class="badge" style="--tier:' + col + '"><span class="tier">' +
+    shortLabel(rank.label) + div + '</span>' + mmr + '</span>';
+}
+
+function teamHtml(players, team, playlistKey) {
+  const cls = team === 0 ? 'blue' : 'orange';
+  const title = team === 0 ? 'Blue' : 'Orange';
+  const rows = players.map(p =>
+    '<div class="row"><span class="dot"></span><span class="name">' +
+    esc(p.name) + '</span>' + badge(p.rank) + '</div>'
+  ).join('');
+  const head = '<div class="head"><b>' + title + '</b><span class="pl">' +
+    (PLAYLIST_NAME[playlistKey] || '') + '</span></div>';
+  return '<div class="team ' + cls + '">' + head + rows + '</div>';
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+function render(snap) {
+  const players = (snap && snap.players) || [];
+  const blue = players.filter(p => p.team === 0);
+  const orange = players.filter(p => p.team === 1);
+
+  // Nothing to show -> tell the host to hide the window (so it never eats clicks).
+  if (!players.length) { host('empty'); return; }
+
+  let html = '<div id="grip" title="Drag to move"></div>';
+  if (blue.length) html += teamHtml(blue, 0, snap.playlistKey);
+  if (blue.length && orange.length) html += '<div class="vs">VS</div>';
+  if (orange.length) html += teamHtml(orange, 1, snap.playlistKey);
+  card.innerHTML = html;
+  bindGrip();
+  reportSize();
+}
+
+// --- native host bridge (WebView2). Harmless no-ops in a plain browser. --------
+function host(msg) { try { window.chrome.webview.postMessage(msg); } catch {} }
+
+let lastSize = '';
+function reportSize() {
+  const wrap = document.getElementById('wrap');
+  const w = Math.ceil(wrap.offsetWidth), h = Math.ceil(wrap.offsetHeight);
+  const s = 'size:' + w + ',' + h;
+  if (s !== lastSize) { lastSize = s; host(s); }
+}
+function bindGrip() {
+  const g = document.getElementById('grip');
+  if (g) g.addEventListener('mousedown', () => host('drag'));
+}
+bindGrip();
+
+// --- live data ---------------------------------------------------------------
+function connect() {
+  const es = new EventSource('/events');
+  es.onmessage = e => { try { render(JSON.parse(e.data)); } catch {} };
+  es.onerror = () => { es.close(); setTimeout(connect, 2000); };
+}
+connect();
+
+// If the host tells us the max width from its anchor, cap the card so a long
+// roster wraps instead of running off the screen.
+try {
+  window.chrome.webview.addEventListener('message', e => {
+    const m = String(e.data || '');
+    if (m.startsWith('max:')) {
+      const px = parseInt(m.slice(4), 10);
+      if (px > 200) { card.style.maxWidth = px + 'px'; card.style.flexWrap = 'wrap'; reportSize(); }
+    }
+  });
+} catch {}
+
+window.addEventListener('resize', reportSize);
+</script>
+</body>
+</html>
