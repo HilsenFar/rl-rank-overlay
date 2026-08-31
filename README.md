@@ -5,7 +5,7 @@ your current match with their competitive rank — your teammates and your
 opponents, colour-coded by tier, with MMR. It sits on top of the game, hides
 itself when the game isn't running, and you can drag it wherever you like.
 
-<!-- A screenshot lives in the repo once you add one: docs/overlay.png -->
+![The overlay showing both teams' ranks over a match](docs/overlay.png)
 
 It is built to be **easy to read**. The whole thing is a few short files:
 
@@ -63,7 +63,9 @@ node --test               # run the tests
 ```
 
 You can open `http://127.0.0.1:8342/` in any browser to see the card (it just
-won't be transparent — that's what the native window is for).
+won't be transparent — that's what the native window is for), or open
+`src/public/overlay.html?demo` directly for a preview with stand-in data and no
+game or server needed (that's how the screenshot above was made).
 
 ## Settings
 

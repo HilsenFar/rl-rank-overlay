@@ -171,7 +171,27 @@ function connect() {
   es.onmessage = e => { try { render(JSON.parse(e.data)); } catch {} };
   es.onerror = () => { es.close(); setTimeout(connect, 2000); };
 }
-connect();
+
+// Preview mode: open overlay.html?demo in any browser to see the card with
+// stand-in data and a faux pitch behind it — no game or server needed.
+const DEMO_SNAPSHOT = {
+  playlistKey: 'p3', playlistId: 13, feed: 'connected',
+  players: [
+    { name: 'you', team: 0, rank: { label: 'Champion I', division: 2, mmr: 780 } },
+    { name: 'Wayprotein', team: 0, rank: { label: 'Grand Champion I', division: 1, mmr: 1005 } },
+    { name: 'Kevpert', team: 0, rank: { label: 'Diamond III', division: 4, mmr: 690 } },
+    { name: 'Sublime', team: 1, rank: { label: 'Grand Champion II', division: 3, mmr: 1120 } },
+    { name: 'noobslayer', team: 1, rank: { label: 'Platinum II', division: 1, mmr: 540 } },
+    { name: 'ssl_smurf', team: 1, rank: { label: 'Supersonic Legend', division: 1, mmr: 1460 } }
+  ]
+};
+if (new URLSearchParams(location.search).has('demo')) {
+  document.body.style.background = 'linear-gradient(135deg,#123a22 0%,#0a2140 55%,#3a1420 100%)';
+  document.body.style.padding = '34px';
+  render(DEMO_SNAPSHOT);
+} else {
+  connect();
+}
 
 // If the host tells us the max width from its anchor, cap the card so a long
 // roster wraps instead of running off the screen.
