@@ -1,6 +1,6 @@
 {
   "name": "rl-rank-overlay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A standalone, transparent Rocket League overlay that shows every player's competitive rank, read from the game's Stats API and looked up through a shared rank service.",
   "type": "module",
   "license": "PolyForm-Noncommercial-1.0.0",

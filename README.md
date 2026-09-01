@@ -1,8 +1,11 @@
 # RL Rank Overlay
 
+[![Downloads](https://img.shields.io/github/downloads/HilsenFar/rl-rank-overlay/total?label=downloads&color=4a90ff)](https://github.com/HilsenFar/rl-rank-overlay/releases)
+[![Latest release](https://img.shields.io/github/v/release/HilsenFar/rl-rank-overlay?label=latest&color=2a2f3a)](https://github.com/HilsenFar/rl-rank-overlay/releases/latest)
+
 A small, transparent overlay for **Rocket League** that shows every player in
 your current match with their competitive rank — your teammates and your
-opponents, colour-coded by tier, with MMR. It sits on top of the game, hides
+opponents, each with a rank emblem in the tier's colours, division and MMR. It sits on top of the game, hides
 itself when the game isn't running, and you can drag it wherever you like.
 
 ![The overlay showing both teams' ranks over a match](docs/overlay.png)
