@@ -14,6 +14,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { trySign } from './tools/sign.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(HERE, 'dist');
@@ -64,7 +65,10 @@ for (const f of ['start.cmd', 'README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md'])
 const icon = path.join(HERE, 'host', 'icon.ico');
 if (fs.existsSync(icon)) cp(icon, path.join(OUT, 'icon.ico'));
 
-// 7. Zip it (PowerShell Compress-Archive — always present on Windows).
+// 7. Sign the shipped exe (no-op without the maintainer's signing.local.json).
+await trySign([path.join(OUT, 'RLOverlay.exe')]);
+
+// 8. Zip it (PowerShell Compress-Archive — always present on Windows).
 const zip = path.join(DIST, 'rl-rank-overlay-win-x64.zip');
 rmrf(zip);
 log('zipping ...');

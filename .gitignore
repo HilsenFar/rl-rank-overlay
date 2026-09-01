@@ -12,3 +12,6 @@ __none.ini
 Thumbs.db
 .DS_Store
 *.pdb
+
+# Maintainer signing config — never committed
+signing.local.json

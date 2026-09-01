@@ -1,0 +1,10 @@
+{
+  "endpoint": "https://weu.codesigning.azure.net",
+  "account": "your-trusted-signing-account",
+  "profile": "your-certificate-profile",
+
+  "//": "Optional service-principal auth. Leave the three fields out to use an 'az login' session instead.",
+  "tenantId": "",
+  "clientId": "",
+  "clientSecret": ""
+}

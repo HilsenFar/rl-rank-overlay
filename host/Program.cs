@@ -78,6 +78,7 @@ namespace RLOverlay
             _cfg = Path.Combine(_dir, "overlay-window.json");
             ReadArgs(args);
             ReadConfig();
+            StartReader();
 
             var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
             CreateWindow();
@@ -85,6 +86,56 @@ namespace RLOverlay
             BuildTray();
             app.Run();
             if (_tray != null) { _tray.Visible = false; _tray.Dispose(); }
+            StopReader();
+        }
+
+        // ---- the local reader (Node) ----
+        // Double-clicking this exe is all a user should ever need: if the
+        // release layout is next to us (node\node.exe + src\overlay.mjs) and
+        // nothing already answers on the local port, start the reader
+        // ourselves, hidden, and take it down again when the overlay quits.
+        // The WebView's retry loop covers the second or two until it listens.
+        private static Process _node;
+
+        private static bool PortOpen(int port)
+        {
+            try
+            {
+                using (var c = new System.Net.Sockets.TcpClient())
+                {
+                    var t = c.BeginConnect("127.0.0.1", port, null, null);
+                    if (!t.AsyncWaitHandle.WaitOne(250)) return false;
+                    c.EndConnect(t);
+                    return true;
+                }
+            }
+            catch { return false; }
+        }
+
+        private static void StartReader()
+        {
+            string node = Path.Combine(_dir, "node", "node.exe");
+            string script = Path.Combine(_dir, "src", "overlay.mjs");
+            if (!File.Exists(node) || !File.Exists(script)) return;   // source checkout: run node yourself
+            if (PortOpen(8342)) return;                               // a reader is already up
+            try
+            {
+                _node = Process.Start(new ProcessStartInfo
+                {
+                    FileName = node,
+                    Arguments = "\"" + script + "\"",
+                    WorkingDirectory = _dir,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+            }
+            catch { _node = null; }                                   // overlay still works against an external reader
+        }
+
+        private static void StopReader()
+        {
+            try { if (_node != null && !_node.HasExited) _node.Kill(); }
+            catch { }
         }
 
         private static void ReadArgs(string[] args)

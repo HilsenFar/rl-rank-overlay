@@ -45,7 +45,7 @@ you just ask it about a list of players and it tells you their ranks.
 1. Download the latest release zip from the
    [Releases page](../../releases) and unzip it anywhere.
 2. Windows SmartScreen will warn about the unsigned build. Either click "More info" > "Run anyway", or avoid the warning entirely: right-click the zip > Properties > tick **Unblock** before extracting.
-3. Double-click **`start.cmd`**.
+3. Double-click **`RLOverlay.exe`** — it starts its own local reader and takes it down again when you quit. (`start.cmd` does the same the long way.)
 4. Start Rocket League and queue a match. The overlay appears once you're in a
    lobby, and hides when the game closes.
 
