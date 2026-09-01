@@ -233,18 +233,8 @@ if (new URLSearchParams(location.search).has('demo')) {
   connect();
 }
 
-// If the host tells us the max width from its anchor, cap the card so a long
-// roster wraps instead of running off the screen.
-try {
-  window.chrome.webview.addEventListener('message', e => {
-    const m = String(e.data || '');
-    if (m.startsWith('max:')) {
-      const px = parseInt(m.slice(4), 10);
-      if (px > 200) { card.style.maxWidth = px + 'px'; card.style.flexWrap = 'wrap'; reportSize(); }
-    }
-  });
-} catch {}
-
+// The host window clamps itself onto the screen, so the card keeps its
+// side-by-side layout and never wraps into a tall stack.
 window.addEventListener('resize', reportSize);
 </script>
 </body>
