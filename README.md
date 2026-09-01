@@ -71,6 +71,15 @@ won't be transparent — that's what the native window is for), or open
 `src/public/overlay.html?demo` directly for a preview with stand-in data and no
 game or server needed (that's how the screenshot above was made).
 
+## Real rank emblems (optional)
+
+The card draws its own shield emblems, so nothing copyrighted ships with the
+app. If you have rank emblem art on your machine (for example from a
+RocketStats install), drop PNG files into an `emblems/` folder next to the
+app, named like the tiers with underscores: `Gold_II.png`,
+`Grand_Champion_I.png`, `Supersonic_Legend.png`, `Unranked.png`. The overlay
+uses them automatically and falls back to the shields for any missing file.
+
 ## Settings
 
 All optional, via environment variables:

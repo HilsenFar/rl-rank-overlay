@@ -15,3 +15,6 @@ Thumbs.db
 
 # Maintainer signing config — never committed
 signing.local.json
+
+# Optional local rank-emblem art (game/third-party assets — never committed)
+emblems/
