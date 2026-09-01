@@ -217,7 +217,9 @@ const DEMO_SNAPSHOT = {
 };
 if (new URLSearchParams(location.search).has('demo')) {
   document.body.style.background = 'linear-gradient(135deg,#123a22 0%,#0a2140 55%,#3a1420 100%)';
-  document.body.style.padding = '34px';
+  document.body.style.display = 'grid';
+  document.body.style.placeItems = 'center';
+  document.body.style.minHeight = '100vh';
   render(DEMO_SNAPSHOT);
 } else {
   connect();
