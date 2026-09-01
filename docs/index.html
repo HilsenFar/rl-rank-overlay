@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RL Rank Overlay</title>
+<meta name="description" content="A free, transparent Rocket League overlay that shows every player's rank in your live lobby. Open source, no account, no telemetry." />
+<meta property="og:title" content="RL Rank Overlay" />
+<meta property="og:description" content="See every player's rank in your live lobby. Free, open source, no account." />
+<meta property="og:image" content="https://rankoverlay.gitato.net/overlay.png" />
+<meta name="theme-color" content="#101A2E" />
+<style>
+  /* Same "stadium night" family as the RL Live Tracker landing. Archivo is
+     self-hosted here so the page makes no third-party requests. */
+  @font-face{
+    font-family:'Archivo';
+    src:url('archivo-var.woff2') format('woff2');
+    font-weight:100 900; font-stretch:62% 125%; font-style:normal; font-display:swap;
+  }
+  :root {
+    --night:#101A2E; --deck:#172440; --deck2:#1C2C50;
+    --line:#27D9C0; --blue:#38B6FF; --boost:#FF9E2C;
+    --ink:#EAF2FF; --ink2:#B8C7E0; --ink3:#8CA0BF;
+    --edge:rgba(184,199,224,.13); --r:12px;
+    --f:'Archivo','Segoe UI',system-ui,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { background:var(--night); }
+  body {
+    min-height:100%;
+    background:
+      radial-gradient(120% 58% at 50% -8%, rgba(120,160,215,.16), transparent 62%),
+      linear-gradient(180deg, rgba(10,16,30,.58), rgba(6,10,19,.95) 62%),
+      url('skin-stadium.jpg') center -30px / cover no-repeat,
+      var(--night);
+    background-attachment:fixed;
+    color:var(--ink2); font-family:var(--f); font-size:16.5px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:920px; margin:0 auto; padding:0 22px 72px; }
+  a { color:var(--blue); }
+  a:focus-visible, .dl:focus-visible { outline:2px solid var(--line); outline-offset:3px; border-radius:4px; }
+
+  .top { display:flex; align-items:baseline; gap:14px; padding:26px 0 48px; }
+  .top a.mark { font-weight:800; font-size:14px; letter-spacing:.24em; color:var(--ink); text-decoration:none; }
+  .top .crumb { font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); }
+
+  .eyebrow { display:flex; gap:10px; font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--line); margin-bottom:14px; }
+  .eyebrow .sep { color:var(--ink3); }
+  h1 { font-family:var(--f); font-weight:850; font-stretch:105%; font-size:clamp(30px,5.4vw,46px); line-height:1.08; color:var(--ink); margin-bottom:16px; }
+  h1 .hl { color:var(--blue); }
+  .sub { max-width:600px; font-size:17.5px; }
+
+  .shot { margin:34px 0 8px; }
+  .shot img {
+    width:100%; height:auto; display:block; border-radius:var(--r);
+    border:1px solid var(--edge);
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+  }
+  .shot figcaption { font-size:12.5px; color:var(--ink3); margin-top:10px; }
+
+  .dl-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin:28px 0 10px; }
+  .dl {
+    display:inline-flex; align-items:center; gap:10px;
+    background:linear-gradient(180deg,#57C2FF,var(--blue)); color:#06131F;
+    font-weight:800; font-size:16px; letter-spacing:.02em; text-decoration:none;
+    padding:13px 22px; border-radius:10px;
+    box-shadow:0 10px 26px rgba(56,182,255,.28), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .dl svg { width:20px; height:20px; stroke:currentColor; }
+  .dl-meta { font-size:13px; color:var(--ink3); }
+  .smartscreen { font-size:13.5px; color:var(--ink3); max-width:620px; margin-top:12px; }
+  .smartscreen b { color:var(--ink2); }
+
+  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:44px 0; }
+  .card {
+    background:linear-gradient(180deg,var(--deck2),var(--deck));
+    border:1px solid var(--edge); border-radius:var(--r); padding:20px 20px 18px;
+  }
+  .card h2 { font-size:15px; color:var(--ink); letter-spacing:.02em; margin-bottom:8px; }
+  .card p { font-size:14px; }
+  .card p + p { margin-top:8px; }
+
+  .privacy { background:rgba(23,36,64,.55); border:1px solid var(--edge); border-radius:var(--r); padding:22px 24px; }
+  .privacy h2 { font-size:15px; color:var(--ink); margin-bottom:10px; }
+  .privacy ul { list-style:none; }
+  .privacy li { font-size:14px; padding-left:20px; position:relative; margin:6px 0; }
+  .privacy li::before { content:''; position:absolute; left:0; top:9px; width:8px; height:8px; border-radius:50%; background:var(--line); opacity:.7; }
+
+  footer { margin-top:52px; font-size:12.5px; color:var(--ink3); }
+  footer a { color:var(--ink2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <a class="mark" href="https://gitato.net/">GITATO</a>
+    <span class="crumb">/ RL Rank Overlay</span>
+  </div>
+
+  <section>
+    <div class="eyebrow"><span>RL Rank Overlay</span><span class="sep">·</span><span>Free · open source</span></div>
+    <h1>Every rank in the lobby, <span class="hl">on the glass</span>.</h1>
+    <p class="sub">A transparent overlay for Rocket League on PC. It reads the
+    game's official Stats API on your machine, looks up each player in the
+    match, and shows their rank emblem, division and MMR — teammates and
+    opponents. It hides itself when the game closes.</p>
+
+    <figure class="shot">
+      <img src="overlay.png" alt="The overlay over a match: both teams with rank emblems, divisions and MMR" width="1240" height="444" />
+      <figcaption>Drag the card anywhere. Click-through mode in the tray menu.</figcaption>
+    </figure>
+
+    <div class="dl-row">
+      <a class="dl" href="https://github.com/HilsenFar/rl-rank-overlay/releases/latest/download/rl-rank-overlay-win-x64.zip">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16" />
+        </svg>
+        Download for Windows
+      </a>
+      <span class="dl-meta">Free · unzip, run start.cmd · nothing to install</span>
+    </div>
+
+    <p class="smartscreen">Windows SmartScreen will warn you, because this is an
+    unsigned indie build. Click <b>"More info"</b>, then <b>"Run anyway"</b>.</p>
+
+    <p class="smartscreen">The whole program is a few short files you can read
+    before you run it:
+    <a href="https://github.com/HilsenFar/rl-rank-overlay" rel="noopener">rl-rank-overlay</a>
+    on GitHub.</p>
+  </section>
+
+  <div class="facts">
+    <section class="card">
+      <h2>Reads the game's own channel</h2>
+      <p>Rocket League broadcasts match JSON on a local port — the official
+      Stats API, with EAC on. The overlay reads that stream on your PC. Nothing
+      touches the game's process or memory.</p>
+    </section>
+    <section class="card">
+      <h2>One request, ranks back</h2>
+      <p>The lobby's player ids go to a shared rank service in a single lookup,
+      and ranks come back. That request is the only thing the overlay ever
+      sends anywhere.</p>
+    </section>
+    <section class="card">
+      <h2>Stays out of your way</h2>
+      <p>Appears when you're in a lobby, hides when the game closes, never
+      steals focus from the match. Drag it where you want it, or turn on
+      click-through and forget it's a window.</p>
+    </section>
+  </div>
+
+  <section class="privacy">
+    <h2>Your data stays yours</h2>
+    <ul>
+      <li>No login, no account, no key to paste in.</li>
+      <li>No telemetry and no feedback channel. The single rank lookup is the whole network story.</li>
+      <li>Open source under PolyForm Noncommercial — read it, build it yourself if you like.</li>
+    </ul>
+  </section>
+
+  <footer>
+    A <a href="https://gitato.net/">GITATO</a> project ·
+    <a href="https://github.com/HilsenFar/rl-rank-overlay" rel="noopener">Source on GitHub</a> ·
+    Also from the same stable: <a href="https://gitato.net/rl-tracker/">RL Live Tracker</a> and
+    <a href="https://roll.gitato.net/">RL Roll</a>.
+    Not affiliated with Psyonix or Epic Games.
+  </footer>
+</div>
+</body>
+</html>
