@@ -8,7 +8,7 @@
   /* The page background stays fully transparent: the native host window paints
      nothing, so whatever this page does NOT draw is the game showing through. */
   :root {
-    --panel: rgba(12, 14, 20, 0.74);
+    --panel: rgba(12, 14, 20, 0.90);
     --border: rgba(255, 255, 255, 0.09);
     --ink: #eef1f6;
     --muted: #9aa3b2;
@@ -42,8 +42,8 @@
     width: 10px; flex: 0 0 10px; cursor: move; align-self: stretch;
     border-radius: 6px;
     background:
-      radial-gradient(circle, rgba(255,255,255,.35) 1px, transparent 1.4px) 0 0 / 4px 4px;
-    opacity: .5;
+      radial-gradient(circle, rgba(255,255,255,.6) 1px, transparent 1.4px) 0 0 / 4px 4px;
+    opacity: .85;
   }
   #grip:hover { opacity: .9; }
 
@@ -91,14 +91,14 @@ const TIERS = ['Unranked', 'Bronze I', 'Bronze II', 'Bronze III', 'Silver I', 'S
 // [bright, dark] per tier group: Unranked, Bronze, Silver, Gold, Plat, Diamond, Champ, GC, SSL.
 function tierPalette(i) {
   if (i === 0) return ['#8B98A9', '#39424E'];
-  if (i <= 3) return ['#C97C4A', '#6E3E22'];
-  if (i <= 6) return ['#C7D0DB', '#6E7987'];
-  if (i <= 9) return ['#EFC75E', '#8A6E28'];
+  if (i <= 3) return ['#C97C4A', '#4A2812'];
+  if (i <= 6) return ['#C7D0DB', '#4E5866'];
+  if (i <= 9) return ['#EFC75E', '#5C4614'];
   if (i <= 12) return ['#7FE3DA', '#29716B'];
   if (i <= 15) return ['#5FB2FF', '#27568F'];
   if (i <= 18) return ['#B08CFF', '#57409A'];
-  if (i <= 21) return ['#FF6B6B', '#8F2C2C'];
-  return ['#F8F4E3', '#C9A227'];
+  if (i <= 21) return ['#FF6B6B', '#5E1A1A'];
+  return ['#F8F4E3', '#7A5E10'];
 }
 function svgEmblem(i) {
   const c = tierPalette(i);
@@ -107,7 +107,7 @@ function svgEmblem(i) {
   return '<svg class="emblem" viewBox="0 0 56 56" role="img" aria-label="' + TIERS[i] + '">'
     + '<path d="M28 3 L50 12 V30 C50 42 40 50 28 54 C16 50 6 42 6 30 V12 Z" fill="' + c[1] + '" stroke="' + c[0] + '" stroke-width="2.5"/>'
     + '<path d="M28 9 L44 16 V29 C44 38 37 44 28 47 C19 44 12 38 12 29 V16 Z" fill="none" stroke="' + c[0] + '" stroke-width="1.2" opacity=".55"/>'
-    + '<text x="28" y="34" text-anchor="middle" font-size="' + (label === 'SSL' ? 12 : 15) + '" font-weight="800" fill="' + c[0] + '" font-family="Segoe UI,sans-serif">' + label + '</text></svg>';
+    + '<text x="28" y="34" text-anchor="middle" font-size="' + (label === 'SSL' ? 18 : 24) + '" font-weight="800" fill="' + c[0] + '" font-family="Segoe UI,sans-serif">' + label + '</text></svg>';
 }
 // Which emblem a rank object gets: trust the numeric tier when the service
 // sent one, otherwise find the label in the tier list.
@@ -150,9 +150,9 @@ function badge(rank) {
   const i = tierIndex(rank);
   const col = tierPalette(i)[0];
   const mmr = Number.isFinite(rank.mmr) ? '<span class="mmr">' + rank.mmr + '</span>' : '';
-  const full = TIERS[i] + (i > 0 && i < 22 && rank.division ? ' · Division ' + rank.division : '');
-  return '<span class="badge" style="--tier:' + col + '" title="' + full + '">' + svgEmblem(i) +
-    '<span class="tier">' + shortLabel(rank.label) + '</span>' + mmr + '</span>';
+  const full = TIERS[i] + (i > 0 && i < 22 && rank.division ? ' · Division ' + esc(rank.division) : '');
+  return '<span class="badge" style="--tier:' + col + '" title="' + full + '">' + emblemHTML(i) +
+    '<span class="tier">' + esc(shortLabel(rank.label)) + '</span>' + mmr + '</span>';
 }
 
 function teamHtml(players, team, playlistKey) {

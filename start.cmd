@@ -8,6 +8,9 @@ rem Prefer the bundled Node runtime; fall back to a Node on PATH.
 set "NODE=%~dp0node\node.exe"
 if not exist "%NODE%" set "NODE=node"
 
+rem Reuse a reader that is already listening (RLOverlay.exe does the same).
+>nul 2>&1 (netstat -an | findstr /r /c:":8342 .*LISTENING" ) && goto ready
+
 rem Start the reader in the background (reads the game, asks the watcher).
 start "" /min "%NODE%" "%~dp0src\overlay.mjs"
 

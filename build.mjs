@@ -5,7 +5,7 @@
 //
 // The zip contains everything needed to run with nothing installed:
 //   - RLOverlay.exe + the WebView2 DLLs (the transparent window)
-//   - a copy of node.exe (the reader runtime)
+//   - a copy of node.exe (the reader runtime) and its LICENSE text
 //   - src/ (the readable source that actually does the work)
 //   - start.cmd
 // Prereqs to BUILD (not to run): .NET SDK (any recent), and this Node.
@@ -20,6 +20,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(HERE, 'dist');
 const OUT = path.join(DIST, 'rl-rank-overlay');
 const BIN = path.join(HERE, 'host', 'bin', 'Release');
+// One version for everything: package.json is the source, the exe gets it too.
+const VERSION = JSON.parse(fs.readFileSync(path.join(HERE, 'package.json'), 'utf8')).version;
 
 const log = (...a) => console.log('[build]', ...a);
 
@@ -40,8 +42,8 @@ function cpDir(from, to, skip = () => false) {
 
 // 1. Build the transparent host.
 log('building the WebView2 host (dotnet build -c Release) ...');
-execFileSync('dotnet', ['build', path.join(HERE, 'host', 'RLOverlay.csproj'), '-c', 'Release', '-v', 'quiet', '-nologo'],
-  { stdio: 'inherit' });
+execFileSync('dotnet', ['build', path.join(HERE, 'host', 'RLOverlay.csproj'), '-c', 'Release', '-v', 'quiet', '-nologo',
+  '-p:Version=' + VERSION], { stdio: 'inherit' });
 if (!fs.existsSync(path.join(BIN, 'RLOverlay.exe'))) throw new Error('RLOverlay.exe not found after build');
 
 // 2. Fresh output folder.
@@ -54,8 +56,17 @@ cpDir(BIN, OUT, name => name.endsWith('.pdb'));
 // 4. The reader source.
 cpDir(path.join(HERE, 'src'), path.join(OUT, 'src'));
 
-// 5. A copy of the Node runtime so the release runs with nothing installed.
+// 5. A copy of the Node runtime so the release runs with nothing installed,
+//    plus its license text: MIT asks for it to travel with every copy. Fetched
+//    for the exact bundled version (the build already needs the network for
+//    dotnet restore).
 cp(process.execPath, path.join(OUT, 'node', 'node.exe'));
+const licUrl = 'https://raw.githubusercontent.com/nodejs/node/' + process.version + '/LICENSE';
+log('fetching the Node.js license text for ' + process.version + ' ...');
+const licRes = await fetch(licUrl);
+const lic = licRes.ok ? await licRes.text() : '';
+if (!/MIT/i.test(lic)) throw new Error('node LICENSE fetch failed: ' + licUrl);
+fs.writeFileSync(path.join(OUT, 'node', 'LICENSE'), lic);
 
 // 6. Launcher, icon and docs.
 for (const f of ['start.cmd', 'README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md']) {

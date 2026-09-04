@@ -167,6 +167,14 @@ const server = http.createServer((req, res) => {
 // Heartbeat so proxies/keep-alive don't drop idle SSE connections.
 setInterval(() => { for (const res of clients) { try { res.write(': ping\n\n'); } catch {} } }, 15e3).unref?.();
 
+// Without an 'error' listener Node rethrows EADDRINUSE as an uncaught exception.
+server.on('error', e => {
+  log('[server] ' + (e && e.code === 'EADDRINUSE'
+    ? 'port ' + PORT + ' is already in use (is the overlay already running?)'
+    : (e && e.message || e)));
+  process.exit(1);
+});
+
 server.listen(PORT, '127.0.0.1', () => {
   log('RL rank overlay listening on http://127.0.0.1:' + PORT);
   log('watcher: ' + (watcher.url || '(disabled)'));

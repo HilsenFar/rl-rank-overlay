@@ -49,6 +49,7 @@ export function createWatcher(opts = {}) {
 
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
+    let httpFail = false;
     try {
       const r = await fetch(url + '/v1/rank', {
         method: 'POST',
@@ -61,6 +62,7 @@ export function createWatcher(opts = {}) {
         // 5xx = it is having a bad time. All mean "try again later", not "spam".
         st.lastError = 'HTTP ' + r.status;
         st.downUntil = Date.now() + (r.status === 429 ? 2 * BACKOFF_MS : BACKOFF_MS);
+        httpFail = true;
         throw new Error(st.lastError);
       }
       const j = await r.json();
@@ -71,7 +73,9 @@ export function createWatcher(opts = {}) {
       st.lookups++;
       return out;
     } catch (e) {
-      if (!st.lastError || !/^HTTP/.test(st.lastError)) {
+      // Anything that is not an HTTP status (timeout, refused, DNS, bad JSON)
+      // gets its own backoff here; an HTTP error set one above already.
+      if (!httpFail) {
         st.lastError = e && e.name === 'AbortError' ? 'timeout' : String(e && e.message || e);
         st.downUntil = Date.now() + BACKOFF_MS;
       }

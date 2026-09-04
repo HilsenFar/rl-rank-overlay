@@ -78,6 +78,8 @@ async function ensureDlib() {
   return dlib;
 }
 
+// When signing goes live: drop the SmartScreen paragraphs in README.md
+// ('Run it' step 2) and docs/index.html (.smartscreen).
 /**
  * Sign the given files if signing is configured; otherwise say so and skip.
  * @param {string[]} files absolute paths to .exe/.dll files
@@ -85,7 +87,7 @@ async function ensureDlib() {
  */
 export async function trySign(files) {
   const cfg = loadConfig();
-  if (!cfg) { log('unsigned build — signing.local.json not found (see AZURE-SETUP in the runbook)'); return false; }
+  if (!cfg) { log('unsigned build — signing.local.json not found (copy signing.local.example.json to set it up)'); return false; }
 
   const signtool = findSigntool();
   const dlib = await ensureDlib();

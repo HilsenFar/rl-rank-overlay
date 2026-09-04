@@ -7,7 +7,8 @@ project. They keep their own licenses.
 
 The release bundles a copy of the Node.js runtime so it can run without a
 separate install. Node.js is distributed under the MIT license and includes
-other components under their own licenses. See
+other components under their own licenses. The full license text ships next to
+the runtime as `node/LICENSE`; the current version is also at
 <https://github.com/nodejs/node/blob/main/LICENSE>.
 
 ## Microsoft Edge WebView2 (`Microsoft.Web.WebView2.*.dll`, `WebView2Loader.dll`)

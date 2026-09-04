@@ -53,7 +53,6 @@ namespace RLOverlay
         private static bool _clickThrough;
         private static bool _sized, _hasPos, _isShown, _wantShown = true, _gameOn = true;
         private static double _anchorX = double.NaN, _anchorY = double.NaN;
-        private static int _sentAvail = -1;
 
         [STAThread]
         private static int Main(string[] args)
@@ -209,7 +208,14 @@ namespace RLOverlay
         {
             string udf = Path.Combine(_dir, "overlay-webview");
             try { Directory.CreateDirectory(udf); } catch { }
-            var env = await CoreWebView2Environment.CreateAsync(null, udf);
+            // The overlay's own code makes one request (the rank lookup). Keep the
+            // runtime from adding its own: component updates, background networking,
+            // domain-reliability reports.
+            var opts = new CoreWebView2EnvironmentOptions
+            {
+                AdditionalBrowserArguments = "--disable-component-update --disable-background-networking --disable-domain-reliability"
+            };
+            var env = await CoreWebView2Environment.CreateAsync(null, udf, opts);
             await _web.EnsureCoreWebView2Async(env);
 
             var c = _web.CoreWebView2;
@@ -260,7 +266,6 @@ namespace RLOverlay
                 _anchorY = wa.Bottom - _win.Height - 24;
             }
             _sized = true;
-            SendAvailWidth(wa);
             Reposition(wa);
             SetWantShown(true);
         }
@@ -288,17 +293,6 @@ namespace RLOverlay
             if (want == _isShown) return;
             if (want) { _win.Show(); _isShown = true; ApplyStyles(); }
             else { _win.Hide(); _isShown = false; }
-        }
-
-        private static void SendAvailWidth(Rect wa)
-        {
-            if (_web == null || _web.CoreWebView2 == null) return;
-            double ax = double.IsNaN(_anchorX) ? wa.Left : _anchorX;
-            int avail = (int)Math.Max(320, wa.Right - ax - 4);
-            if (avail == _sentAvail) return;
-            _sentAvail = avail;
-            try { _web.CoreWebView2.PostWebMessageAsString("max:" + avail.ToString(CultureInfo.InvariantCulture)); }
-            catch { }
         }
 
         private static void Reposition(Rect wa)
