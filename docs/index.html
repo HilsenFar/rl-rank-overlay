@@ -97,6 +97,8 @@
   }
   .dl svg { width:20px; height:20px; stroke:currentColor; }
   .dl-meta { font-size:13px; color:var(--ink3); }
+  .relver { display:block; margin-top:3px; color:var(--line); font-weight:600; }
+  .relver:empty { display:none; }
   /* Phone visitors cannot run a Windows overlay where they stand. */
   .handoff { margin-top:14px; max-width:620px; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;
     padding:14px 16px; background:rgba(23,36,64,.72); border:1px solid var(--edge); border-radius:10px; font-size:14px; }
@@ -171,7 +173,7 @@
         </svg>
         Download for Windows
       </a>
-      <span class="dl-meta">Free · unzip, run RLOverlay.exe · nothing to install</span>
+      <span class="dl-meta">Free · unzip, run RLOverlay.exe · nothing to install<span class="relver" id="relver"></span></span>
     </div>
 
     <div class="handoff" id="handoff" hidden>
@@ -258,6 +260,28 @@
         function(){ out.textContent = url; });
     } else { out.textContent = url; }
   });
+})();
+</script>
+<script>
+/* Latest release, read from GitHub so this line can never go stale. One call,
+   cached for an hour in this browser; on any failure the line stays empty. */
+(function(){
+  var el = document.getElementById('relver');
+  if (!el || !window.fetch) return;
+  var KEY = 'rl.relver.rl-rank-overlay', M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function show(tag, at){
+    if (!/^v?[\w.-]{1,30}$/.test(tag) || !/^\d{4}-\d\d-\d\dT/.test(at)) return;
+    var d = new Date(at);
+    el.textContent = 'Latest: ' + tag + ' \u00b7 ' + d.getUTCDate() + ' ' + M[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+  }
+  try { var c = JSON.parse(localStorage.getItem(KEY) || 'null'); if (c && Date.now() - c.t < 3600000) return show(c.tag, c.at); } catch (e) {}
+  fetch('https://api.github.com/repos/HilsenFar/rl-rank-overlay/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      if (!j || typeof j.tag_name !== 'string') return;
+      show(j.tag_name, j.published_at);
+      try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), tag: j.tag_name, at: j.published_at })); } catch (e) {}
+    }).catch(function(){});
 })();
 </script>
 </body>
