@@ -5,11 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>RL Rank Overlay</title>
 <meta name="description" content="A free, transparent Rocket League overlay that shows every player's rank in your live lobby. Open source, no account, no telemetry." />
-<meta property="og:title" content="RL Rank Overlay" />
+<link rel="canonical" href="https://rankoverlay.gitato.net/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://rankoverlay.gitato.net/" />
+<meta property="og:site_name" content="GITATO" />
+<meta property="og:title" content="RL Rank Overlay — every rank in the lobby, on the glass" />
 <meta property="og:description" content="See every player's rank in your live lobby. Free, open source, no account." />
-<meta property="og:image" content="https://rankoverlay.gitato.net/overlay.png" />
+<meta property="og:image" content="https://rankoverlay.gitato.net/og.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="The rank overlay: both teams with rank emblems, divisions and MMR" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="theme-color" content="#101A2E" />
 <link rel="icon" href="favicon.ico" sizes="any" />
+<!-- Fetched before the CSS asks for it. Without this the Archivo swap came
+     ~1.4 s after first paint, the headline re-wrapped and the whole page
+     jumped 50 px (measured 22/9: CLS 0.275, "poor"). -->
+<link rel="preload" href="archivo-var.woff2" as="font" type="font/woff2" crossorigin />
 <style>
   /* Same "stadium night" family as the RL Live Tracker landing. Archivo is
      self-hosted here so the page makes no third-party requests. */
@@ -17,6 +29,12 @@
     font-family:'Archivo';
     src:url('archivo-var.woff2') format('woff2');
     font-weight:100 900; font-stretch:62% 125%; font-style:normal; font-display:swap;
+  }
+  /* The GITATO mark in its own face, as on the tracker landing (6 glyphs, OFL). */
+  @font-face{
+    font-family:'Orbitron';
+    src:url('orbitron-800.woff2') format('woff2');
+    font-weight:800; font-style:normal; font-display:swap;
   }
   :root {
     --night:#101A2E; --deck:#172440; --deck2:#1C2C50;
@@ -43,8 +61,16 @@
   a:focus-visible, .dl:focus-visible { outline:2px solid var(--line); outline-offset:3px; border-radius:4px; }
 
   .top { display:flex; align-items:baseline; gap:14px; padding:26px 0 48px; }
-  .top a.mark { font-weight:800; font-size:14px; letter-spacing:.24em; color:var(--ink); text-decoration:none; }
+  .top a.mark { font-family:'Orbitron',var(--f); font-weight:800; font-size:14px; letter-spacing:.24em; color:var(--ink); text-decoration:none; }
   .top .crumb { font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); }
+  /* One bar across the three RL tools; aria-current marks where you are. */
+  .family { margin-left:auto; display:flex; gap:4px; align-self:center; }
+  .family a { padding:6px 11px; font-size:11.5px; font-weight:600; font-stretch:88%; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink3); text-decoration:none; border:1px solid transparent; border-radius:6px;
+    transition:color .15s ease, border-color .15s ease, background .15s ease; }
+  .family a:hover { color:var(--ink); border-color:var(--edge); }
+  .family a[aria-current="page"] { color:var(--ink); background:rgba(23,36,64,.7); border-color:var(--edge); }
+  @media (max-width:560px) { .top .crumb { display:none; } .family a { padding:6px 8px; letter-spacing:.1em; } }
 
   .eyebrow { display:flex; gap:10px; font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--line); margin-bottom:14px; }
   .eyebrow .sep { color:var(--ink3); }
@@ -70,19 +96,38 @@
   }
   .dl svg { width:20px; height:20px; stroke:currentColor; }
   .dl-meta { font-size:13px; color:var(--ink3); }
+  /* Phone visitors cannot run a Windows overlay where they stand. */
+  .handoff { margin-top:14px; max-width:620px; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;
+    padding:14px 16px; background:rgba(23,36,64,.72); border:1px solid var(--edge); border-radius:10px; font-size:14px; }
+  .handoff[hidden] { display:none; }
+  .handoff p { flex:1 1 220px; }
+  .handoff button { font:inherit; font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:#06131F; background:var(--blue); border:0; border-radius:7px; padding:10px 14px; cursor:pointer; }
+  .handoff button:focus-visible { outline:2px solid var(--line); outline-offset:3px; }
+  .handoff output { flex-basis:100%; font-size:13px; color:var(--line); }
+  .handoff output:empty { display:none; }
   .smartscreen { font-size:13.5px; color:var(--ink3); max-width:620px; margin-top:12px; }
   .smartscreen b { color:var(--ink2); }
 
   .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:44px 0; }
-  .card {
-    background:linear-gradient(180deg,var(--deck2),var(--deck));
-    border:1px solid var(--edge); border-radius:var(--r); padding:20px 20px 18px;
+  /* Milled plate, the same one the tracker landing and the app use: one cut
+     corner top right, a lit 1 px chamfer on the edges that face the light. */
+  .card, .privacy {
+    background:
+      linear-gradient(187deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.01) 34%, rgba(0,0,0,.06) 58%, rgba(190,220,255,.02) 100%),
+      linear-gradient(163deg, #1E2B47 0%, #172440 44%, #0C1526 100%);
+    border:1px solid var(--edge); border-radius:3px 13px 3px 3px;
+    box-shadow:inset 0 1px 0 rgba(196,224,255,.24), inset 1px 0 0 rgba(196,224,255,.11),
+      inset -1px 0 0 rgba(0,0,0,.38), inset 0 -1px 0 rgba(0,0,0,.60),
+      0 1px 0 rgba(0,0,0,.85), 0 10px 24px -12px rgba(0,0,0,.6);
   }
+  @supports (corner-shape: bevel) { .card, .privacy { corner-shape: round bevel round round; } }
+  .card { padding:20px 20px 18px; }
   .card h2 { font-size:15px; color:var(--ink); letter-spacing:.02em; margin-bottom:8px; }
   .card p { font-size:14px; }
   .card p + p { margin-top:8px; }
 
-  .privacy { background:rgba(23,36,64,.55); border:1px solid var(--edge); border-radius:var(--r); padding:22px 24px; }
+  .privacy { padding:22px 24px; }
   .privacy h2 { font-size:15px; color:var(--ink); margin-bottom:10px; }
   .privacy ul { list-style:none; }
   .privacy li { font-size:14px; padding-left:20px; position:relative; margin:6px 0; }
@@ -95,10 +140,15 @@
 <body>
 <div class="wrap">
 
-  <div class="top">
+  <header class="top">
     <a class="mark" href="https://gitato.net/">GITATO</a>
     <span class="crumb">/ RL Rank Overlay</span>
-  </div>
+    <nav class="family" aria-label="Rocket League tools">
+      <a href="https://rltracker.gitato.net/">Tracker</a>
+      <a href="https://rankoverlay.gitato.net/" aria-current="page">Overlay</a>
+      <a href="https://roll.gitato.net/">Roll</a>
+    </nav>
+  </header>
 
   <section>
     <div class="eyebrow"><span>RL Rank Overlay</span><span class="sep">·</span><span>Free · open source</span></div>
@@ -121,6 +171,12 @@
         Download for Windows
       </a>
       <span class="dl-meta">Free · unzip, run RLOverlay.exe · nothing to install</span>
+    </div>
+
+    <div class="handoff" id="handoff" hidden>
+      <p>On your phone? The overlay runs on a Windows PC next to Rocket League. Send yourself the link.</p>
+      <button type="button" id="handoffBtn">Send link</button>
+      <output id="handoffOut" aria-live="polite"></output>
     </div>
 
     <p class="smartscreen">Windows SmartScreen will warn you, because this is an
@@ -165,10 +221,43 @@
   <footer>
     A <a href="https://gitato.net/">GITATO</a> project ·
     <a href="https://github.com/HilsenFar/rl-rank-overlay" rel="noopener">Source on GitHub</a> ·
-    Also from the same stable: <a href="https://gitato.net/rl-tracker/">RL Live Tracker</a> and
+    Also from the same stable: <a href="https://rltracker.gitato.net/">RL Live Tracker</a> and
     <a href="https://roll.gitato.net/">RL Roll</a>.
     Not affiliated with Psyonix or Epic Games.
   </footer>
 </div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "RL Rank Overlay",
+  "url": "https://rankoverlay.gitato.net/",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Windows 10, Windows 11",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "A transparent Rocket League overlay that shows every player's rank, division and MMR in your live lobby. Open source, no account.",
+  "author": { "@type": "Person", "name": "HilsenFar", "url": "https://github.com/HilsenFar" }
+}
+</script>
+<script>
+/* Phone handoff: only on a touch device that is not Windows. The share sheet
+   sends the link wherever the visitor keeps things; otherwise the clipboard. */
+(function(){
+  var box = document.getElementById('handoff');
+  var coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  if (!box || !coarse || /Windows NT/.test(navigator.userAgent)) return;
+  box.hidden = false;
+  var out = document.getElementById('handoffOut');
+  var url = 'https://rankoverlay.gitato.net/';
+  document.getElementById('handoffBtn').addEventListener('click', function(){
+    if (navigator.share) {
+      navigator.share({ title: 'RL Rank Overlay', text: 'Every rank in your Rocket League lobby, on screen', url: url }).catch(function(){});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function(){ out.textContent = 'Link copied: ' + url; },
+        function(){ out.textContent = url; });
+    } else { out.textContent = url; }
+  });
+})();
+</script>
 </body>
 </html>
