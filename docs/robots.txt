@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rankoverlay.gitato.net/sitemap.xml
