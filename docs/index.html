@@ -34,17 +34,18 @@
     font-weight:100 900; font-stretch:62% 125%; font-style:normal; font-display:swap;
   }
   /* Stand-ins while Archivo loads (23/9): Segoe UI, Arial or Roboto with
-     Archivo's line metrics and scaled to its width, so the swap no longer
+     Archivo's line metrics and scaled to its width (weights 550-749 on caps, the
+     labels they set), so the swap no longer
      moves text (cold slow load: CLS 0.15 before). Computed with
      fontTools from the font files; headline target wdth 105 / wght 850. */
   @font-face{font-family:'Archivo FB';src:local('Segoe UI'),local('SegoeUI');font-weight:100 549;size-adjust:99.5%;ascent-override:88.3%;descent-override:21.1%;line-gap-override:0%}
-  @font-face{font-family:'Archivo FB';src:local('Segoe UI Bold'),local('SegoeUI-Bold');font-weight:550 749;size-adjust:97.8%;ascent-override:89.8%;descent-override:21.5%;line-gap-override:0%}
-  @font-face{font-family:'Archivo FB';src:local('Segoe UI Black'),local('SegoeUI-Black');font-weight:750 900;size-adjust:107.3%;ascent-override:81.9%;descent-override:19.6%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB';src:local('Segoe UI Bold'),local('SegoeUI-Bold');font-weight:550 749;size-adjust:105.3%;ascent-override:83.4%;descent-override:19.9%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB';src:local('Segoe UI Black'),local('SegoeUIBlack');font-weight:750 900;size-adjust:107.3%;ascent-override:81.9%;descent-override:19.6%;line-gap-override:0%}
   @font-face{font-family:'Archivo FB A';src:local('Arial'),local('ArialMT');font-weight:100 549;size-adjust:98.2%;ascent-override:89.4%;descent-override:21.4%;line-gap-override:0%}
-  @font-face{font-family:'Archivo FB A';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:550 749;size-adjust:96.4%;ascent-override:91.1%;descent-override:21.8%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB A';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:550 749;size-adjust:98.3%;ascent-override:89.3%;descent-override:21.4%;line-gap-override:0%}
   @font-face{font-family:'Archivo FB A';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:750 900;size-adjust:110.8%;ascent-override:79.2%;descent-override:18.9%;line-gap-override:0%}
   @font-face{font-family:'Archivo FB R';src:local('Roboto'),local('Roboto-Regular');font-weight:100 549;size-adjust:99.1%;ascent-override:88.6%;descent-override:21.2%;line-gap-override:0%}
-  @font-face{font-family:'Archivo FB R';src:local('Roboto Bold'),local('Roboto-Bold');font-weight:550 749;size-adjust:102.8%;ascent-override:85.4%;descent-override:20.4%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB R';src:local('Roboto Bold'),local('Roboto-Bold');font-weight:550 749;size-adjust:110.6%;ascent-override:79.4%;descent-override:19.0%;line-gap-override:0%}
   @font-face{font-family:'Archivo FB R';src:local('Roboto Black'),local('Roboto-Black');font-weight:750 900;size-adjust:117.4%;ascent-override:74.8%;descent-override:17.9%;line-gap-override:0%}
   /* The GITATO mark in its own face, as on the tracker landing (6 glyphs, OFL). */
   @font-face{
@@ -91,6 +92,8 @@
 
   .eyebrow { display:flex; gap:10px; font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--line); margin-bottom:14px; }
   .eyebrow .sep { color:var(--ink3); }
+  /* Phones: both parts on their own lines, so the label wraps the same in Archivo and the stand-in. */
+  @media (max-width:400px) { .eyebrow { flex-direction:column; gap:2px; } .eyebrow .sep { display:none; } }
   h1 { font-family:var(--f); font-weight:850; font-stretch:105%; font-size:clamp(30px,5.4vw,46px); line-height:1.08; color:var(--ink); margin-bottom:16px; }
   h1 .hl { color:var(--blue); }
   @media (min-width:700px) { h1 { min-height:2.16em; } }
