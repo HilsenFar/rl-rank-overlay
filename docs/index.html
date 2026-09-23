@@ -21,7 +21,10 @@
 <!-- Fetched before the CSS asks for it. Without this the Archivo swap came
      ~1.4 s after first paint, the headline re-wrapped and the whole page
      jumped 50 px (measured 22/9: CLS 0.275, "poor"). -->
+<!-- Both faces are fetched before the CSS asks for them; the fallback faces
+     below keep the text still while they arrive (23/9). -->
 <link rel="preload" href="archivo-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="orbitron-800.woff2" as="font" type="font/woff2" crossorigin />
 <style>
   /* Same "stadium night" family as the RL Live Tracker landing. Archivo is
      self-hosted here so the page makes no third-party requests. */
@@ -30,6 +33,19 @@
     src:url('archivo-var.woff2') format('woff2');
     font-weight:100 900; font-stretch:62% 125%; font-style:normal; font-display:swap;
   }
+  /* Stand-ins while Archivo loads (23/9): Segoe UI, Arial or Roboto with
+     Archivo's line metrics and scaled to its width, so the swap no longer
+     moves text (cold slow load: CLS 0.15 before). Computed with
+     fontTools from the font files; headline target wdth 105 / wght 850. */
+  @font-face{font-family:'Archivo FB';src:local('Segoe UI'),local('SegoeUI');font-weight:100 549;size-adjust:99.5%;ascent-override:88.3%;descent-override:21.1%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB';src:local('Segoe UI Bold'),local('SegoeUI-Bold');font-weight:550 749;size-adjust:97.8%;ascent-override:89.8%;descent-override:21.5%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB';src:local('Segoe UI Black'),local('SegoeUI-Black');font-weight:750 900;size-adjust:107.3%;ascent-override:81.9%;descent-override:19.6%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB A';src:local('Arial'),local('ArialMT');font-weight:100 549;size-adjust:98.2%;ascent-override:89.4%;descent-override:21.4%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB A';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:550 749;size-adjust:96.4%;ascent-override:91.1%;descent-override:21.8%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB A';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:750 900;size-adjust:110.8%;ascent-override:79.2%;descent-override:18.9%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB R';src:local('Roboto'),local('Roboto-Regular');font-weight:100 549;size-adjust:99.1%;ascent-override:88.6%;descent-override:21.2%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB R';src:local('Roboto Bold'),local('Roboto-Bold');font-weight:550 749;size-adjust:102.8%;ascent-override:85.4%;descent-override:20.4%;line-gap-override:0%}
+  @font-face{font-family:'Archivo FB R';src:local('Roboto Black'),local('Roboto-Black');font-weight:750 900;size-adjust:117.4%;ascent-override:74.8%;descent-override:17.9%;line-gap-override:0%}
   /* The GITATO mark in its own face, as on the tracker landing (6 glyphs, OFL). */
   @font-face{
     font-family:'Orbitron';
@@ -41,7 +57,7 @@
     --line:#27D9C0; --blue:#38B6FF; --boost:#FF9E2C;
     --ink:#EAF2FF; --ink2:#B8C7E0; --ink3:#8CA0BF;
     --edge:rgba(184,199,224,.13); --r:12px;
-    --f:'Archivo','Segoe UI',system-ui,sans-serif;
+    --f:'Archivo','Archivo FB','Archivo FB A','Archivo FB R','Segoe UI',system-ui,sans-serif;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html { background:var(--night); }
