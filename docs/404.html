@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>404 — RL Rank Overlay</title>
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#101A2E" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<!-- GitHub Pages serves this for any missing path at any depth, so every
+     reference is absolute. Same RL-family skin as the landing (22-23/9). -->
+<style>
+  @font-face { font-family: 'Archivo'; src: url('/archivo-var.woff2') format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+  @font-face { font-family: 'Orbitron'; src: url('/orbitron-800.woff2') format('woff2'); font-weight: 800; font-display: swap; }
+  :root { --night: #101A2E; --line: #27D9C0; --acc: #38B6FF; --ink: #EAF2FF; --ink2: #B8C7E0; --ink3: #8CA0BF; --edge: rgba(184,199,224,.13); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--night); }
+  body {
+    min-height: 100vh; display: grid; place-items: center; padding: 30px 20px;
+    background: radial-gradient(120% 58% at 50% -8%, rgba(120,160,215,.16), transparent 62%), var(--night);
+    color: var(--ink2); font: 16px/1.6 'Archivo', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  main { width: 100%; max-width: 620px; border-left: 3px solid var(--acc); padding-left: 22px; }
+  .mark { font-family: 'Orbitron', 'Archivo', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .24em; color: var(--ink); text-decoration: none; }
+  .code { margin-top: 18px; font-weight: 860; font-stretch: 118%; font-size: clamp(72px, 16vw, 132px); line-height: .9; color: var(--ink); }
+  h1 { margin-top: 12px; font-weight: 800; font-stretch: 110%; font-size: 24px; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); }
+  p { margin-top: 10px; max-width: 46ch; }
+  .path { display: inline-block; margin-top: 12px; padding: 5px 10px; font: 13px ui-monospace, Consolas, monospace; color: var(--ink3);
+          background: #070D19; border: 1px solid var(--edge); border-radius: 3px; overflow-wrap: anywhere; max-width: 100%; }
+  .home { display: inline-flex; margin-top: 22px; padding: 12px 20px; font-weight: 800; font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+          color: #0B1220; background: var(--acc); border-radius: 4px; text-decoration: none; }
+  nav { margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--edge); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  nav a { font-size: 12px; font-weight: 600; font-stretch: 88%; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); text-decoration: none; }
+  nav a:hover { color: var(--ink); }
+  a:focus-visible { outline: 2px solid var(--line); outline-offset: 3px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="mark" href="https://gitato.net/">GITATO</a>
+  <div class="code">404</div>
+  <h1>Nothing at this address</h1>
+  <p>The page you asked for isn't here. It may have moved, or the link may have been mistyped.</p>
+  <code class="path" id="path">/</code><br>
+  <a class="home" href="/">Back to RL Rank Overlay</a>
+  <nav aria-label="Rocket League tools">
+    <a href="https://rltracker.gitato.net/">RL Live Tracker</a>
+    <a href="https://rankoverlay.gitato.net/">RL Rank Overlay</a>
+    <a href="https://roll.gitato.net/">RL Roll</a>
+    <a href="https://gitato.net/">All GITATO projects</a>
+  </nav>
+</main>
+<script>document.getElementById('path').textContent = location.pathname + location.search || '/';</script>
+</body>
+</html>
